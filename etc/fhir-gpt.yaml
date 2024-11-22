@@ -1,0 +1,164 @@
+description: 'FHIR-GPT Prompt Supplementary Appendix DOI: 10.1056/AIcs2300301'
+
+providers:
+  - anthropic:messages:claude-3-5-sonnet-20241022
+  - openai:chat:gpt-4o
+  - openai:chat:gpt-4o-mini
+
+prompts:
+  - label: 'FHIR-GPT Prompt'
+    description: 'Prompt used in FHIR-GPT'
+    raw: |
+      You are a helpful assistant that can help with medication data extraction.
+      User will paste a short narrative that describes the administration of a drug.
+      Please extract the drug route (How drug should enter body), e.g. PO, IV.
+      All other drug information, e,g. dosage, frequency, reason shall be discarded.
+
+      Please MUST ONLY return the converted .json result without any explanations, or contexts.
+      The output itself must be parse-able with python's json.loads()
+      The output should start and end with brackets.
+
+      If you cannot find related drug route, you MUST leave it as blank and MUST return a blank json {}
+      You MUST use information only from the original text, MUST NOT infer from the context.
+
+      For each drug route, please extract the originial text and find its most related SNOMED code in o
+      If you cannot find an exact same meaning SNOMED drug route code, just leave it as blank.
+
+      For example, the narrative "Oxycodone-Acetaminophen 5-325 mg Tablet Sig: 1-2 Tablets PO\nQ4-6H (e
+      You should return a json format: {'text': 'PO', 'coding': [{'system': 'http://snomed.info/sct',
+
+      Another example, the narrative "Daptomycin, intravenously for a total of 14\ndays"
+      You should return a json format: {'text': 'intravenously', 'coding': [{'system': 'http://snomed.i
+
+      Another example, the narrative "heparin sodium, porcine 5000 UNT/ML Injectable Solution"
+      You should return a json format: {'text': 'injections'}
+
+      Another example, the narrative "Oxycodone-Acetaminophen 5-325 mg q4h prn torn ACL pain"
+      You should return blank json {}
+
+      SNOMED codes to select from:
+
+      Code Display
+      284009009 Route of administration values
+      6064005 Topical route
+      10547007 Otic route
+      12130007 Intra-articular route
+      16857009 Per vagina
+      26643006 Oral route
+      34206005 Subcutaneous route
+      37161004 Per rectum
+      37737002 Intraluminal route
+      37839007 Sublingual route
+      38239002 Intraperitoneal route
+      45890007 Transdermal route
+      46713006 Nasal route
+      47625008 Intravenous route
+      54471007 Buccal route
+      54485002 Ophthalmic route
+      58100008 Intra-arterial route
+      60213007 Intramedullary route
+      62226000 Intrauterine route
+      72607000 Intrathecal route
+      78421000 Intramuscular route
+      90028008 Urethral route
+      127490009 Gastrostomy route
+      127491008 Jejunostomy route
+      127492001 Nasogastric route
+      372449004 Dental use
+      372450004 Endocervical use
+      372451000 Endosinusial use
+      372452007 Endotracheopulmonary use
+      372453002 Extra-amniotic use
+      372454008 Gastroenteral use
+      372457001 Gingival use
+      372458006 Intraamniotic use
+      372459003 Intrabursal use
+      372460008 Intracardiac use
+      372461007 Intracavernous use
+      372462000 Intracervical route
+      372463005 Intracoronary use
+      372464004 Intradermal use
+      372465003 Intradiscal use
+      372466002 Intralesional use
+      372467006 Intralymphatic use
+      372468001 Intraocular use
+      372469009 Intrapleural use
+      372470005 Intrasternal use
+      372471009 Intravesical use
+      372472002 Ocular route
+      372473007 Oromucosal use
+      372474001 Periarticular use
+      372475000 Perineural use
+      372476004 Subconjunctival use
+      404815008 Transmucosal route
+      404818005 Intratracheal route
+      404819002 Intrabiliary route
+      404820008 Epidural route
+      416174007 Suborbital route
+      417070009 Caudal route
+      417255000 Intraosseous route
+      417950001 Intrathoracic route
+      417985001 Enteral route
+      417989007 Intraductal route
+      418091004 Intratympanic route
+      418114005 Intravenous central route
+      418133000 Intramyometrial route
+      418136008 Gastro-intestinal stoma route
+      418162004 Colostomy route
+      418204005 Periurethral route
+      418287000 Intracoronal route
+      418321004 Retrobulbar route
+      418331006 Intracartilaginous route
+      418401004 Intravitreal route
+      418418000 Intraspinal route
+      418441008 Orogastric route
+      418511008 Transurethral route
+      418586008 Intratendinous route
+      418608002 Intracorneal route
+      418664002 Oropharyngeal route
+      418722009 Peribulbar route
+      418730005 Nasojejunal route
+      418743005 Fistula route
+      418813001 Surgical drain route
+      418821007 Intracameral route
+      418851001 Paracervical route
+      418877009 Intrasynovial route
+      418887008 Intraduodenal route
+      418892005 Intracisternal route
+      418947002 Intratesticular route
+      418987007 Intracranial route
+      419021003 Tumour cavity route
+      419165009 Paravertebral route
+      419231003 Intrasinal route
+      419243002 Transcervical route
+      419320008 Subtendinous route
+      419396008 Intraabdominal route
+      419601003 Subgingival route
+      419631009 Intraovarian route
+      419684008 Ureteral route
+      419762003 Peritendinous route
+      419778001 Intrabronchial route
+      419810008 Intraprostatic route
+      419874009 Submucosal route
+      419894000 Surgical cavity route
+      419954003 Ileostomy route
+      419993007 Intravenous peripheral route
+
+      User input:
+      {{note}}
+
+defaultAssert:
+  - type: is-json
+
+tests:
+  - vars:
+      note: |
+        Carvedilol
+        6.25 mg PO BID
+    assert:
+      - type: equals
+        value:
+          {
+            'text': 'PO',
+            'coding': [{ 'system': 'http://snomed.info/sct', 'code': '26643006', 'display': 'Oral route' }],
+          }

@@ -1,17 +1,15 @@
 {
-  "name": "@flexpa/fhir-llm",
-  "module": "src/index.ts",
+  "name": "@flexpa/llm-fhir-eval",
+  "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "eval": "bunx promptfoo eval",
+    "build": "bun run dev && bunx promptfoo share"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  },
-  "scripts": {
-    "dev": "bun run src/index.ts"
-  },
-  "dependencies": {
-    "openai": "^4.53.1"
   }
 }

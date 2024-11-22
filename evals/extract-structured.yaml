@@ -1,0 +1,236 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: 'Structured FHIR Data Extraction'
+
+providers:
+  - anthropic:messages:claude-3-5-sonnet-20241022
+  - openai:chat:gpt-4o
+  - openai:chat:gpt-4o-mini
+
+prompts:
+  - label: 'Basic specialist example'
+    description: 'Extract specific information from structured FHIR resources'
+    raw: |
+      You are a FHIR data extraction specialist.
+      Given a FHIR resource and a question, extract the requested information.
+      Return only the specific answer without explanation.
+      When the question is about a specific value, return the value only.
+      If a unit is specified, return the value with unit.
+
+      FHIR Resource:
+      {{resource}}
+
+      Question:
+      {{question}}
+
+tests:
+  # Test basic demographic extraction
+  - vars:
+      resource: |
+        {
+          "resourceType": "Patient",
+          "id": "example",
+          "name": [
+            {
+              "use": "official",
+              "family": "Smith",
+              "given": ["John", "Jacob"]
+            },
+            {
+              "use": "nickname",
+              "given": ["Jack"]
+            }
+          ],
+          "gender": "male",
+          "birthDate": "1990-01-15",
+          "address": [
+            {
+              "use": "home",
+              "line": ["123 Main St"],
+              "city": "Anytown",
+              "state": "CA",
+              "postalCode": "12345"
+            }
+          ]
+        }
+      question: "What is the patient's official full name?"
+    assert:
+      - type: equals
+        value: 'John Jacob Smith'
+
+  # Test nested data extraction
+  - vars:
+      resource: |
+        {
+          "resourceType": "Observation",
+          "id": "blood-pressure",
+          "status": "final",
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                  "code": "vital-signs",
+                  "display": "Vital Signs"
+                }
+              ]
+            }
+          ],
+          "code": {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "85354-9",
+                "display": "Blood pressure panel"
+              }
+            ]
+          },
+          "component": [
+            {
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "8480-6",
+                    "display": "Systolic blood pressure"
+                  }
+                ]
+              },
+              "valueQuantity": {
+                "value": 120,
+                "unit": "mmHg"
+              }
+            },
+            {
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "8462-4",
+                    "display": "Diastolic blood pressure"
+                  }
+                ]
+              },
+              "valueQuantity": {
+                "value": 80,
+                "unit": "mmHg"
+              }
+            }
+          ]
+        }
+      question: 'What is the systolic blood pressure value?'
+    assert:
+      - type: factuality
+        # Make sure the LLM output is consistent with this statement:
+        value: '120 mmHg'
+
+  # Test extraction from arrays with conditions
+  - vars:
+      resource: |
+        {
+          "resourceType": "MedicationRequest",
+          "id": "example",
+          "status": "active",
+          "intent": "order",
+          "medicationCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                "code": "1049502",
+                "display": "Acetaminophen 325 MG"
+              }
+            ]
+          },
+          "dosageInstruction": [
+            {
+              "sequence": 1,
+              "timing": {
+                "repeat": {
+                  "frequency": 4,
+                  "period": 1,
+                  "periodUnit": "d"
+                }
+              },
+              "doseAndRate": [
+                {
+                  "type": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/dose-rate-type",
+                        "code": "ordered",
+                        "display": "Ordered"
+                      }
+                    ]
+                  },
+                  "doseQuantity": {
+                    "value": 1,
+                    "unit": "tablet"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      question: 'What is the daily frequency of the medication?'
+    assert:
+      - type: equals
+        value: '4'
+
+  # Test extraction requiring interpretation
+  - vars:
+      resource: |
+        {
+          "resourceType": "Condition",
+          "id": "example",
+          "clinicalStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "active",
+                "display": "Active"
+              }
+            ]
+          },
+          "verificationStatus": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "confirmed",
+                "display": "Confirmed"
+              }
+            ]
+          },
+          "category": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                  "code": "problem-list-item",
+                  "display": "Problem List Item"
+                }
+              ]
+            }
+          ],
+          "severity": {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "24484000",
+                "display": "Severe"
+              }
+            ]
+          },
+          "code": {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "195967001",
+                "display": "Asthma"
+              }
+            ]
+          },
+          "onsetDateTime": "2020-03-15"
+        }
+      question: 'Is this an active severe condition, and if so, what is it?'
+    assert:
+      - type: factuality
+        value: 'Yes, severe active asthma'
