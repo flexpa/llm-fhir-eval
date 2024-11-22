@@ -1,5 +1,9 @@
 # @flexpa/llm-fhir-eval
 
+Important
+
+This is an early preview release
+
 ## Overview
 
 `@flexpa/llm-fhir-eval` is a preview of an evaluation framework designed to benchmark the performance of LLMs on FHIR-specific tasks including generation, validation, and extraction. This framework aims to systematically test and validate the capabilities of LLMs in handling various healthcare-interoperability related tasks, ensuring they meet the standards required for effective FHIR implementations. It implements evaluations from prior art such as [FHIR-GPT](https://ai.nejm.org/doi/10.1056/AIcs2300301). We are seeking feedback on the benchmark and its evaluations.
