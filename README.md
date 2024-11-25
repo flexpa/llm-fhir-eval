@@ -1,7 +1,8 @@
 # @flexpa/llm-fhir-eval
 
 > [!IMPORTANT]
-> This is an early preview release
+> This is an early preview release. All evaluations are experimental.
+> Follow the development progress on [FHIR Chat](https://chat.fhir.org/#narrow/channel/323443-Artificial-Intelligence.2FMachine-Learning-.28AI.2FML.29/topic/LLM.20FHIR.20Eval.20Preview/near/483998202).
 
 ## Overview
 
