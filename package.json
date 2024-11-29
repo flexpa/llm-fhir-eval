@@ -1,0 +1,16 @@
+{
+  "name": "@flexpa/llm-fhir-eval",
+  "module": "index.ts",
+  "private": false,
+  "type": "module",
+  "version": "0.0.2",
+  "scripts": {
+    "eval": "npx promptfoo eval"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
