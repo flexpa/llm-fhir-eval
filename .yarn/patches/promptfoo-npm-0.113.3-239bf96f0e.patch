@@ -1,0 +1,47 @@
+diff --git a/package.json b/package.json
+index e17eeb5e4ecf61ac3c8b6f96d6a16445f31a60e1..142ad6371c613270ece06fa02543cdda934d1ce0 100644
+--- a/package.json
++++ b/package.json
+@@ -14,6 +14,42 @@
+     ".": {
+       "import": "./dist/src/index.js",
+       "require": "./dist/src/index.js"
++    },
++    "./dist/src/providers/openai/responses": {
++      "import": "./dist/src/providers/openai/responses.js",
++      "require": "./dist/src/providers/openai/responses.js"
++    },
++    "./dist/src/providers/openai/util": {
++      "import": "./dist/src/providers/openai/util.js",
++      "require": "./dist/src/providers/openai/util.js"
++    },
++    "./dist/src/logger": {
++      "import": "./dist/src/logger.js",
++      "require": "./dist/src/logger.js"
++    },
++    "./dist/src/providers/openai/types": {
++      "import": "./dist/src/providers/openai/types.js",
++      "require": "./dist/src/providers/openai/types.js"
++    },
++    "./dist/src/envars": {
++      "import": "./dist/src/envars.js",
++      "require": "./dist/src/envars.js"
++    },
++    "./dist/src/util": {
++      "import": "./dist/src/util/index.js",
++      "require": "./dist/src/util/index.js"
++    },
++    "./dist/src/providers/anthropic/generic": {
++      "import": "./dist/src/providers/anthropic/generic.js",
++      "require": "./dist/src/providers/anthropic/generic.js"
++    },
++    "./dist/src/providers/anthropic/types": {
++      "import": "./dist/src/providers/anthropic/types.js",
++      "require": "./dist/src/providers/anthropic/types.js"
++    },
++    "./dist/src/providers/anthropic/util": {
++      "import": "./dist/src/providers/anthropic/util.js",
++      "require": "./dist/src/providers/anthropic/util.js"
+     }
+   },
+   "workspaces": [

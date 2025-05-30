@@ -1,0 +1,80 @@
+- description: Martial status
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: What is the patient's recorded marital status (just the code)?
+  assert:
+    - type: equals
+      value: D
+- description: Clinical event
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: Which SNOMED CT code identifies the procedure documented in the April 18 1979 encounter?
+  assert:
+    - type: equals
+      value: 162673000
+- description: BMI
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: What was the patient's Body-mass index (BMI) value (with units) measured in May 2024?
+  assert:
+    - type: equals
+      value: 28.14 kg/m2
+- description: Hard-mode
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: On which exact date did the patient transition from full-time to part-time employment, and which insurer was billed for the encounter where that change was first documented?
+  assert:
+    - type: factuality
+      value: May 8 2024 and Anthem
+- description: Age calculation and temporal reasoning
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: How old was the patient when they received their higher education finding, and how many years passed before they had their first lipid panel performed?
+  assert:
+    - type: factuality
+      value: 18 years old when received higher education finding, and 46 years passed before first lipid panel in May 2025
+- description: Insurance transitions and coverage gaps
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: List all the insurance providers the patient has had in chronological order, including when they had no insurance, and identify the longest continuous period with the same coverage.
+  assert:
+    - type: factuality
+      value: NO_INSURANCE (1979), Aetna (2001), Cigna Health (2017), Anthem (2023-2025). Longest continuous coverage was with Anthem from 2023-2025.
+- description: Substance use screening interpretation
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: What substance use screening tools were administered in May 2024, what were the scores?
+  assert:
+    - type: factuality
+      value: PHQ-2 (score 0) and DAST-10 (score 1) were administered.
+- description: Social determinants and clinical correlations
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: According to the PRAPARE assessment, what was the patient's employment status, education level, and stress level?
+  assert:
+    - type: factuality
+      value: Part-time employment, completed more than high school education, and reported no stress.
+- description: Vital signs trend analysis
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: Compare the patient's blood pressure readings between May 2024 and May 2025, and determine if there was improvement or deterioration. What was the pain score trend during the same period?
+  assert:
+    - type: factuality
+      value: Blood pressure improved from 102/84 mmHg (May 2024) to 104/79 mmHg (May 2025) - diastolic decreased by 5 mmHg. Pain score worsened from 2/10 to 4/10.
+- description: Complex condition timeline
+  vars:
+    resource:
+      - file://tests/patient-history.json
+    question: What conditions were documented as resolved during the patient's care, when were they first diagnosed, and what was the duration of each condition?
+  assert:
+    - type: factuality
+      value: Three conditions resolved - Full-time employment (May 3, 2023 to May 8, 2024, duration 370 days), Social isolation (May 3, 2023 to May 8, 2024, duration 370 days), and Medication review due (May 8, 2024 to May 14, 2025, duration 371 days)

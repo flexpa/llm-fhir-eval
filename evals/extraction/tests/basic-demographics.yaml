@@ -1,0 +1,173 @@
+- description: Full name
+  vars:
+    resource: &patient_resource_json |
+      {
+        "resourceType": "Patient",
+        "id": "example",
+        "name": [
+          {
+            "use": "official",
+            "family": "Smith-Jones",
+            "given": ["John", "Jacob", "Jingleheimer"],
+            "prefix": ["Dr."],
+            "suffix": ["Jr."]
+          },
+          {
+            "use": "nickname",
+            "given": ["Jack"]
+          },
+          {
+            "use": "maiden",
+            "family": "Johnson"
+          }
+        ],
+        "gender": "other",
+        "birthDate": "1990-01-15",
+        "address": [
+          {
+            "use": "home",
+            "line": ["123 Main St", "Apt 4B"],
+            "city": "Anytown",
+            "state": "CA",
+            "postalCode": "90210"
+          },
+          {
+            "use": "old",
+            "line": ["456 Elm St"],
+            "city": "Oldtown",
+            "state": "NY",
+            "postalCode": "54321"
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "555-123-4567",
+            "use": "home"
+          },
+          {
+            "system": "email",
+            "value": "john.smith@example.com",
+            "use": "work"
+          }
+        ],
+        "maritalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
+              "code": "M",
+              "display": "Married"
+            }
+          ]
+        },
+        "multipleBirthBoolean": true
+      }
+    question: What is the patient's full name?
+  assert:
+    - type: equals
+      value: Dr. John Jacob Jingleheimer Smith-Jones Jr.
+
+- description: Date of birth
+  vars:
+    resource: *patient_resource_json
+    question: What is the patient's date of birth?
+  assert:
+    - type: equals
+      value: '1990-01-15'
+
+- description: Nickname
+  vars:
+    resource: *patient_resource_json
+    question: What is the patient's nickname?
+  assert:
+    - type: equals
+      value: Jack
+
+- description: Complete home address
+  vars:
+    resource: *patient_resource_json
+    question: What is the patient's complete home address in standard format?
+  assert:
+    - type: contains-any
+      value:
+        - 123 Main St, Apt 4B, Anytown, CA 90210
+        - 123 Main St Apt 4B, Anytown, CA 90210
+        - 123 Main St, Apt 4B Anytown CA 90210
+        - 123 Main St Apt 4B Anytown, CA 90210
+
+- description: State of residence
+  vars:
+    resource: *patient_resource_json
+    question: What state does the patient live in?
+  assert:
+    - type: equals
+      value: CA
+
+- description: All given names in official name
+  vars:
+    resource: *patient_resource_json
+    question: List all given names for the patient's official name.
+  assert:
+    - type: contains-any
+      value:
+        - John, Jacob, Jingleheimer
+        - John Jacob Jingleheimer
+        - "John\nJacob\nJingleheimer"
+
+- description: Maiden name
+  vars:
+    resource: *patient_resource_json
+    question: What is the patient's maiden name?
+  assert:
+    - type: equals
+      value: Johnson
+
+- description: All addresses
+  vars:
+    resource: *patient_resource_json
+    question: What was the patient's previous address?
+  assert:
+    - type: contains-any
+      value:
+        - 456 Elm St, Oldtown, NY 54321
+        - 456 Elm St, Oldtown, NY, 54321
+
+- description: Home address, line 2
+  vars:
+    resource: *patient_resource_json
+    question: What is the second line of the patient's home address?
+  assert:
+    - type: equals
+      value: Apt 4B
+
+- description: All telecoms
+  vars:
+    resource: *patient_resource_json
+    question: List all contact methods for the patient in the format "value (system), value (system), etc.".
+  assert:
+    - type: equals
+      value: 555-123-4567 (phone), john.smith@example.com (email)
+
+- description: Marital status code
+  vars:
+    resource: *patient_resource_json
+    question: What is the patient's marital status code?
+  assert:
+    - type: equals
+      value: M
+
+- description: Is the patient a multiple birth? True or false?
+  vars:
+    resource: *patient_resource_json
+    question: Was the patient part of a multiple birth?
+  assert:
+    - type: equals
+      value: true
+
+- description: Gender value
+  vars:
+    resource: *patient_resource_json
+    question: What is the patient's gender?
+  assert:
+    - type: equals
+      value: other

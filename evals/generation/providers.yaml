@@ -1,0 +1,88 @@
+- label: openai-gpt-3.5-turbo
+  id: openai:chat:gpt-3.5-turbo
+  config:
+    max_output_tokens: 16184
+- label: openai-gpt-4.1
+  id: openai:responses:gpt-4.1
+  config:
+    max_output_tokens: 16184
+- label: openai-o3-low
+  id: openai:responses:o3
+  config:
+    max_output_tokens: 16184
+    reasoning_effort: 'low'
+- label: openai-o3-high
+  id: openai:responses:o3
+  config:
+    max_output_tokens: 16184
+    reasoning_effort: 'high'
+- label: claude-3-5-haiku-20241022
+  id: anthropic:messages:claude-3-5-haiku-20241022
+  config:
+    max_output_tokens: 8192
+- label: anthropic-claude-3-5-sonnet-20241022
+  id: anthropic:messages:claude-3-5-sonnet-20241022
+  config:
+    max_tokens: 8192
+- label: anthropic-claude-sonnet-4-20250514
+  id: anthropic:messages:claude-sonnet-4-20250514
+  config:
+    max_tokens: 8192
+  transform: |
+    output = output.replace(/^```json\n/, '').replace(/\n```$/, '').trim();
+    return output;
+- label: anthropic-claude-opus-4-20250514
+  id: anthropic:messages:claude-opus-4-20250514
+  config:
+    max_tokens: 8192
+  transform: |
+    output = output.replace(/^```json\n/, '').replace(/\n```$/, '').trim();
+    return output;
+- label: google-gemini-2.0-flash
+  id: google:gemini-2.0-flash
+  config:
+    max_output_tokens: 16184
+    generationConfig:
+      response_mime_type: 'application/json'
+- label: google-gemini-2.5-flash-preview-05-20
+  id: google:gemini-2.5-flash-preview-05-20
+  config:
+    max_output_tokens: 16184
+    generationConfig:
+      response_mime_type: 'application/json'
+- label: google-gemini-2.5-pro-preview-05-06
+  id: google:gemini-2.5-pro-preview-05-06
+  config:
+    max_output_tokens: 16184
+    generationConfig:
+      response_mime_type: 'application/json'
+- label: ii-medical-8b
+  id: openai:chat:II-Medical-8B
+  config:
+    max_output_tokens: 16184
+    apiBaseUrl: https://g6ifi04b81u9oza5.us-east-1.aws.endpoints.huggingface.cloud/v1
+    showThinking: false
+  transform: |
+    output = output.replace(/<think>.*<\/think>/gis, '').trim();
+    output = output.replace(/<\s*\/?\s*Answer\s*>/gi, '').trim();
+    return output;
+- label: medgemma-4b-it
+  id: openai:chat:medgemma-4b-it
+  config:
+    max_output_tokens: 16184
+    apiBaseUrl: https://a6pf0b0uqcuajaua.us-east-1.aws.endpoints.huggingface.cloud/v1
+    showThinking: false
+  transform: |
+    output = output.replace(/<\s*\/?\s*Answer\s*>/gi, '').trim();
+      output = output.replace(/```json\s*([\s\S]*?)```/i, '$1').trim();
+    return output;
+- label: medgemma-27b-text-it
+  id: openai:chat:medgemma-27b-text-it
+  config:
+    max_output_tokens: 16184
+    apiBaseUrl: https://i7n97jz1el3l39h5.us-east-1.aws.endpoints.huggingface.cloud/v1
+    showThinking: false
+  transform: |
+    output = output.replace(/<\s*\/?\s*Answer\s*>/gi, '').trim();
+    output = output.replace(/```json\s*([\s\S]*?)```/i, '$1').trim();
+    return output;

@@ -1,16 +1,21 @@
 {
   "name": "@flexpa/llm-fhir-eval",
   "module": "index.ts",
-  "private": false,
-  "type": "module",
   "version": "0.0.2",
   "scripts": {
-    "eval": "npx promptfoo eval"
+    "eval": "promptfoo eval"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "promptfoo": "0.113.3"
+  },
+  "resolutions": {
+    "promptfoo@0.113.3": "patch:promptfoo@npm%3A0.113.3#./.yarn/patches/promptfoo-npm-0.113.3-239bf96f0e.patch"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "flexpa": {
+    "publishableRepo": true
+  },
+  "packageManager": "yarn@4.9.1"
 }

@@ -1,0 +1,649 @@
+- description: Systolic blood pressure extraction
+  vars:
+    resource: &observation_resource_json |
+      {
+        "resourceType": "Observation",
+        "id": "blood-pressure",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs",
+                "display": "Vital Signs"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "85354-9",
+              "display": "Blood pressure panel"
+            }
+          ]
+        },
+        "component": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8480-6",
+                  "display": "Systolic blood pressure"
+                }
+              ]
+            },
+            "valueQuantity": {
+              "value": 120,
+              "unit": "mmHg"
+            }
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8462-4",
+                  "display": "Diastolic blood pressure"
+                }
+              ]
+            },
+            "valueQuantity": {
+              "value": 80,
+              "unit": "mmHg"
+            }
+          }
+        ]
+      }
+    question: What is the systolic blood pressure value (including unit)?
+  assert:
+    - type: equals
+      value: 120 mmHg
+- description: Diastolic blood pressure extraction
+  vars:
+    resource: *observation_resource_json
+    question: What is the diastolic blood pressure value (including unit)?
+  assert:
+    - type: equals
+      value: 80 mmHg
+- description: Complete blood pressure reading in systolic/diastolic format
+  vars:
+    resource: *observation_resource_json
+    question: What is the complete blood pressure reading in systolic/diastolic format?
+  assert:
+    - type: equals
+      value: 120/80 mmHg
+- description: CodeableConcept extraction without display
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "dce7c80f-36fa-4693-bce8-75ca9d90a53c",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "vital-signs",
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "85354-9",
+            }
+          ]
+        },
+        "component": [
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8480-6",
+                }
+              ]
+            },
+            "valueQuantity": {
+              "value": 120,
+              "unit": "mmHg"
+            }
+          },
+          {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8462-4",
+                }
+              ]
+            },
+            "valueQuantity": {
+              "value": 80,
+              "unit": "mmHg"
+            }
+          }
+        ]
+      }
+    question: What is the diastolic blood pressure value (including unit)?
+  assert:
+    - type: equals
+      value: 80 mmHg
+- description: Systolic blood pressure with missing unit
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "a1b2c3d4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "85354-9" }
+          ]
+        },
+        "component": [
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "8480-6" } ] },
+            "valueQuantity": { "value": 130 }
+          }
+        ]
+      }
+    question: What is the systolic blood pressure value?
+  assert:
+    - type: equals
+      value: 130
+- description: Diastolic blood pressure as string value
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "e5f6g7h8",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "85354-9" }
+          ]
+        },
+        "component": [
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "8462-4" } ] },
+            "valueString": "eighty-two mmHg"
+          }
+        ]
+      }
+    question: What is the diastolic blood pressure value?
+  assert:
+    - type: contains-any
+      value:
+        - eighty-two mmHg
+        - 82 mmHg
+- description: Blood pressure with extra irrelevant component
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "i9j0k1l2",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "85354-9" }
+          ]
+        },
+        "component": [
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "8480-6" } ] },
+            "valueQuantity": { "value": 110, "unit": "mmHg" }
+          },
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "8462-4" } ] },
+            "valueQuantity": { "value": 70, "unit": "mmHg" }
+          },
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "9999-9" } ] },
+            "valueQuantity": { "value": 999, "unit": "foo" }
+          }
+        ]
+      }
+    question: What is the complete blood pressure reading in systolic/diastolic format?
+  assert:
+    - type: contains-any
+      value:
+        - 110/70 mmHg
+        - 110 mmHg/70 mmHg
+- description: Blood pressure with non-standard code
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "m3n4o5p6",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "99999-9" }
+          ]
+        },
+        "component": [
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "8480-6" } ] },
+            "valueQuantity": { "value": 115, "unit": "mmHg" }
+          },
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "8462-4" } ] },
+            "valueQuantity": { "value": 75, "unit": "mmHg" }
+          }
+        ]
+      }
+    question: What is the complete blood pressure reading in systolic/diastolic format?
+  assert:
+    - type: contains-any
+      value:
+        - 115/75 mmHg
+        - 115 mmHg/75 mmHg
+- description: Potassium value only in extension
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "z1x2c3v4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "2823-3", "display": "Potassium [Moles/volume] in Serum or Plasma" }
+          ]
+        },
+        "extension": [
+          {
+            "url": "http://example.org/fhir/StructureDefinition/observation-value",
+            "valueQuantity": { "value": 4.2, "unit": "mmol/L" }
+          }
+        ]
+      }
+    question: What is the potassium value (including unit)?
+  assert:
+    - type: equals
+      value: 4.2 mmol/L
+- description: Glucose with multiple value types
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "g5h6j7k8",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" }
+          ]
+        },
+        "valueQuantity": { "value": 95, "unit": "mg/dL" },
+        "interpretation": [
+          { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation", "code": "N", "display": "Normal" } ] }
+        ]
+      }
+    question: What is the glucose value (including unit)?
+  assert:
+    - type: equals
+      value: 95 mg/dL
+- description: Sodium with coded interpretation only
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "s1o2d3i4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "2951-2", "display": "Sodium [Moles/volume] in Serum or Plasma" }
+          ]
+        },
+        "valueQuantity": { "value": 150, "unit": "mmol/L" },
+        "interpretation": [
+          { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation", "code": "H", "display": "High" } ] }
+        ]
+      }
+    question: What is the sodium interpretation code?
+  assert:
+    - type: equals
+      value: H
+- description: Cholesterol as a range
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "c1h2o3l4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "2093-3", "display": "Cholesterol [Mass/volume] in Serum or Plasma" }
+          ]
+        },
+        "valueRange": {
+          "low": { "value": 180, "unit": "mg/dL" },
+          "high": { "value": 200, "unit": "mg/dL" }
+        }
+      }
+    question: What is the cholesterol value range (including units)?
+  assert:
+    - type: contains-any
+      value:
+        - 180-200 mg/dL
+        - 100 - 200 mg/dL
+        - 180 mg/dL - 200 mg/dL
+        - 180 mg/dL to 200 mg/dL
+        - 180 - 200 mg/dL
+- description: Hemoglobin A1c with multiple codings
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "h1a2b3c4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "4548-4", "display": "Hemoglobin A1c/Hemoglobin.total in Blood" },
+            { "system": "http://snomed.info/sct", "code": "43396009", "display": "Hemoglobin A1c measurement" }
+          ]
+        },
+        "valueQuantity": { "value": 6.1, "unit": "%" }
+      }
+    question: What is the hemoglobin A1c value (including unit)?
+  assert:
+    - type: contains-any
+      value:
+        - 6.1 %
+        - 6.1%
+- description: TSH value only in narrative
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "t1s2h3n4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "3016-3", "display": "Thyrotropin [Units/volume] in Serum or Plasma" }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div>TSH: 2.5 mIU/L</div>"
+        }
+      }
+    question: What is the TSH value (including unit)?
+  assert:
+    - type: equals
+      value: 2.5 mIU/L
+- description: Creatinine value in referenced DiagnosticReport
+  vars:
+    resource: |
+      {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": [
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "id": "cr1e2a3t4",
+              "status": "final",
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "2160-0", "display": "Creatinine [Mass/volume] in Serum or Plasma" }
+                ]
+              },
+              "derivedFrom": [
+                { "reference": "DiagnosticReport/dr1234" }
+              ]
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "DiagnosticReport",
+              "id": "dr1234",
+              "result": [
+                { "reference": "Observation/cr1e2a3t4-value" }
+              ]
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "id": "cr1e2a3t4-value",
+              "valueQuantity": { "value": 1.1, "unit": "mg/dL" }
+            }
+          }
+        ]
+      }
+    question: What is the creatinine value (including unit)?
+  assert:
+    - type: equals
+      value: 1.1 mg/dL
+- description: Vitamin D with localized display
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "v1d2e3f4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "1989-3", "display": "Vitamina D" }
+          ]
+        },
+        "valueQuantity": { "value": 30, "unit": "ng/mL" }
+      }
+    question: What is the vitamin D value (including unit)?
+  assert:
+    - type: equals
+      value: 30 ng/mL
+- description: White blood cell count with conflicting values
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "w1b2c3c4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "6690-2", "display": "Leukocytes [#/volume] in Blood by Automated count" }
+          ]
+        },
+        "valueQuantity": { "value": 7.0, "unit": "10^3/uL" },
+        "component": [
+          {
+            "code": { "coding": [ { "system": "http://loinc.org", "code": "6690-2" } ] },
+            "valueQuantity": { "value": 6.8, "unit": "10^3/uL" }
+          }
+        ]
+      }
+    question: What is the main white blood cell count value (including unit)?
+  assert:
+    - type: equals
+      value: 7.0 10^3/uL
+- description: Calcium with unusual units
+  vars:
+    resource: |
+      {
+        "resourceType": "Observation",
+        "id": "ca1l2c3i4",
+        "status": "final",
+        "code": {
+          "coding": [
+            { "system": "http://loinc.org", "code": "17861-6", "display": "Calcium [Moles/volume] in Serum or Plasma" }
+          ]
+        },
+        "valueQuantity": { "value": 2.2, "unit": "mmol/L", "code": "mg/dL" }
+      }
+    question: What is the calcium value (including unit)?
+  assert:
+    - type: equals
+      value: 2.2 mmol/L
+- description: Glucose - find the most recent value from a bundle of many observations (with out-of-order dates)
+  vars:
+    resource: |
+      {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": [
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 90, "unit": "mg/dL" }, "effectiveDateTime": "2022-01-01T08:00:00Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 110, "unit": "mg/dL" }, "effectiveDateTime": "2022-02-01T08:00:00Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 105, "unit": "mg/dL" }, "effectiveDateTime": "2022-01-15T08:00:00Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 99, "unit": "mg/dL" }, "effectiveDateTime": "2021-12-31T08:00:00Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 115, "unit": "mg/dL" }, "effectiveDateTime": "2022-03-01T08:00:00Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 101, "unit": "mg/dL" }, "effectiveDateTime": "2022-02-28T23:59:59Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 112, "unit": "mg/dL" }, "effectiveDateTime": "2022-02-01T07:59:59Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 108, "unit": "mg/dL" }, "effectiveDateTime": "2022-03-01T07:59:59Z" } },
+          { "resource": { "resourceType": "Observation", "status": "final", "code": { "coding": [ { "system": "http://loinc.org", "code": "2345-7", "display": "Glucose [Mass/volume] in Blood" } ] }, "valueQuantity": { "value": 113, "unit": "mg/dL" }, "effectiveDateTime": "2022-02-01T08:00:01Z" } }
+        ]
+      }
+    question: What is the most recent glucose value (including unit)?
+  assert:
+    - type: equals
+      value: 115 mg/dL
+- description: Ultimate lab value extraction challenge
+  vars:
+    resource: |
+      {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": [
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" },
+                  { "system": "http://snomed.info/sct", "code": "43396009", "display": "Fasting glucose" }
+                ]
+              },
+              "valueQuantity": { "value": 98, "unit": "mg/dL" },
+              "effectiveDateTime": "2022-04-01T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "extension": [
+                {
+                  "url": "http://example.org/fhir/StructureDefinition/observation-value",
+                  "valueQuantity": { "value": 102, "unit": "mg/dL" }
+                }
+              ],
+              "effectiveDateTime": "2022-05-01T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "entered-in-error",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "valueQuantity": { "value": 200, "unit": "mg/dL" },
+              "effectiveDateTime": "2022-06-01T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/456" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "valueQuantity": { "value": 99, "unit": "mg/dL" },
+              "effectiveDateTime": "2022-07-01T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Plasma" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "valueQuantity": { "value": 100, "unit": "mg/dL" },
+              "effectiveDateTime": "2022-05-02T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "valueString": "one hundred and five mg/dL",
+              "effectiveDateTime": "2022-05-03T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "valueQuantity": { "value": 5.8, "unit": "mmol/L" },
+              "effectiveDateTime": "2022-05-04T09:00:00Z"
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Observation",
+              "status": "final",
+              "subject": { "reference": "Patient/123" },
+              "specimen": { "display": "Serum" },
+              "code": {
+                "coding": [
+                  { "system": "http://loinc.org", "code": "1558-6", "display": "Glucose [Mass/volume] in Serum or Plasma --Fasting" }
+                ]
+              },
+              "text": {
+                "status": "generated",
+                "div": "<div>Glucose: 106 mg/dL</div>"
+              },
+              "effectiveDateTime": "2022-05-05T09:00:00Z"
+            }
+          }
+        ]
+      }
+    question: What is the most recent, valid, fasting serum glucose value (in mg/dL) for patient "Patient/123", considering all available information, and normalizing units if necessary?
+  assert:
+    - type: equals
+      value: 106 mg/dL

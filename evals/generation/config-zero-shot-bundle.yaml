@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: 'FHIR Bundle Generation (Zero Shot)'
+
+providers:
+  - file://providers.yaml
+
+prompts:
+  - label: 'Unstructured Note to FHIR'
+    raw: |
+      You are a health informaticist expert in FHIR. 
+      You will receive unstructured notes and you need to structure them into FHIR resources.
+      You must only include data that is present in the note.
+      You must only return a valid FHIR JSON Bundle, with the appropriate resources, with no additional explanation.
+      You may include multiple resources in the bundle.
+      You must follow the FHIR R4 specification.
+      You mut not include a meta element in the resources.
+      When generateing a CodeableConcept, you must include a coding element with a system, code, and display.
+      When generating a CodeableConcept, you must use a display matching what is expected by the CodeSystem.
+      Each entry in a Bundle must have a fullUrl which is the identity of the resource in the entry.
+      The id of a resource must be a valid UUID in lowercase.
+
+      You must only return JSON with no additional markup or explanation.
+
+      <note>
+      {{note}}
+      </note>
+
+defaultTest:
+  assert:
+    - type: is-json
+    - type: javascript
+      value: file://../../assertions/isBundle.mjs
+    - type: javascript
+      value: file://../../assertions/metaElementMissing.mjs
+    - type: javascript
+      value: file://../../assertions/validateOperation.mjs
+
+tests:
+  - file://tests.yaml

@@ -1,0 +1,184 @@
+- description: Basic patient resource
+  vars:
+    note: |
+      Patient Marie Curie (DOB: 1867-11-07)
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Patient') &&
+          result.entry.some(e => e.resource.name.some(n => n.given && n.given.includes('Marie') && n.family && n.family.includes('Curie'))) &&
+          result.entry.some(e => e.resource.birthDate === '1867-11-07')
+        );
+
+- vars:
+    note: |
+      Patient: Emily Chen, born 2010-11-05, received influenza vaccine on 2023-10-15.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e =>
+            e.resource.resourceType === 'Immunization' &&
+            e.resource.vaccineCode?.coding?.some(c => c.display?.toLowerCase().includes('influenza'))
+          )
+        );
+
+- vars:
+    note: |
+      Patient John Smith (DOB: 1990-01-15) presented with fever (39.2°C) and cough on 2024-03-15.
+      BP was 120/80. History of asthma. Prescribed azithromycin 500mg daily for 3 days.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Patient') &&
+          result.entry.some(e => e.resource.resourceType === 'Observation') &&
+          result.entry.some(e => e.resource.resourceType === 'MedicationRequest')
+        );
+
+- description: Blood chemistry diagnostic report
+  vars:
+    note: |
+      Patient: Carlos Ramirez (DOB: 1972-02-09) had routine blood work on 2024-04-20 showing elevated LDL cholesterol (160 mg/dL).
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Patient') &&
+          result.entry.some(e => e.resource.resourceType === 'DiagnosticReport') &&
+          result.entry.some(e => e.resource.resourceType === 'Observation' && e.resource.code?.coding?.[0]?.display?.toLowerCase().includes('ldl'))
+        );
+
+- description: Documented peanut allergy
+  vars:
+    note: |
+      Patient Sarah Johnson (DOB: 1985-07-22) has a severe peanut allergy resulting in anaphylaxis.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Patient') &&
+          result.entry.some(e => e.resource.resourceType === 'AllergyIntolerance' && e.resource.code?.coding?.[0]?.display?.toLowerCase().includes('peanut'))
+        );
+
+- description: Outpatient encounter with blood pressure observation
+  vars:
+    note: |
+      Patient Michael Lee (DOB: 1998-12-01) had an outpatient visit on 2024-05-02 with blood pressure 118/76 mmHg.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Encounter') &&
+          result.entry.some(e => e.resource.resourceType === 'Observation' && (e.resource.code?.text?.toLowerCase().includes('blood pressure') || e.resource.code?.coding?.some(c => c.display?.toLowerCase().includes('blood pressure'))))
+        );
+
+- description: Chronic condition diabetes mellitus type 2
+  vars:
+    note: |
+      Patient Olivia Nguyen (DOB: 1960-06-14) diagnosed with Type 2 diabetes mellitus on 2015-08-10.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Condition' && (e.resource.code?.text?.toLowerCase().includes('diabetes') || e.resource.code?.coding?.some(c => c.display?.toLowerCase().includes('diabetes'))))
+        );
+
+- description: Appendectomy procedure
+  vars:
+    note: |
+      Patient Liam Patel (DOB: 2002-03-30) underwent an emergency appendectomy on 2024-01-12.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Procedure' && (e.resource.code?.text?.toLowerCase().includes('appendectomy') || e.resource.code?.coding?.some(c => c.display?.toLowerCase().includes('appendectomy'))))
+        );
+
+- description: Medication statement – metformin therapy
+  vars:
+    note: |
+      Patient Noah Kim (DOB: 1975-11-19) takes metformin 500mg twice daily for Type 2 diabetes.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'MedicationStatement' && (e.resource.medicationCodeableConcept?.text?.toLowerCase().includes('metformin') || e.resource.medicationCodeableConcept?.coding?.some(c => c.display?.toLowerCase().includes('metformin'))))
+        );
+
+- description: Healthcare organization details
+  vars:
+    note: |
+      Redwood Medical Center located at 456 Elm St, Springfield, phone 555-6789.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Organization' && e.resource.name?.includes('Redwood Medical Center'))
+        );
+
+- description: Practitioner profile cardiologist
+  vars:
+    note: |
+      Cardiologist Dr. Jane Taylor, National Provider Identifier (NPI): 1234567890.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Practitioner' && e.resource.name?.some(n => n.family?.includes('Taylor'))) &&
+          result.entry.some(e => e.resource.resourceType === 'Practitioner' && e.resource.identifier?.some(id => id.value === '1234567890'))
+        );
+
+- description: Insurance plan coverage period
+  vars:
+    note: |
+      UnitedHealthcare Gold Plan (policy ID 987654) valid from 2024-01-01 through 2024-12-31 for Daniel Williams (DOB: 1980-05-15).
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Coverage') &&
+          result.entry.some(e => e.resource.resourceType === 'Patient')
+        );
+
+- description: Outpatient claim for office visit
+  vars:
+    note: |
+      Claim of $123.45 for CPT code 99213 submitted on 2024-04-10.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Claim' && e.resource.total?.value === 123.45) &&
+          result.entry.some(e => e.resource.resourceType === 'Claim' && e.resource.item?.some(i => i.productOrService?.coding?.some(c => c.code === '99213')))
+        );
+
+- description: Complex patient case
+  vars:
+    note: |
+      Patient John Smith (DOB: 1945-08-20) has hypertension and type 2 diabetes. Blood pressure reading on 2024-03-15 was 140/90 mmHg. A1C measured 7.2% on 2024-03-15.
+  assert:
+    - type: javascript
+      value: |
+        const result = JSON.parse(output);
+        return (
+          result.entry.some(e => e.resource.resourceType === 'Patient' && e.resource.name?.some(n => n.family === 'Smith')) &&
+          result.entry.some(e => e.resource.resourceType === 'Condition' && e.resource.code?.coding?.some(c => c.code === '44054006')) && // Type 2 diabetes
+          result.entry.some(e => e.resource.resourceType === 'Condition' && e.resource.code?.coding?.some(c => c.code === '38341003')) && // Hypertension
+          result.entry.some(e => e.resource.resourceType === 'Observation' && e.resource.code?.coding?.some(c => c.code === '85354-9')) && // Blood pressure
+          result.entry.some(e => e.resource.resourceType === 'Observation' && e.resource.code?.coding?.some(c => c.code === '4548-4')) // Hemoglobin A1c
+        );

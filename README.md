@@ -13,78 +13,92 @@
 `@flexpa/llm-fhir-eval` benchmarks FHIR-specific tasks including:
 
 1. **FHIR Resource Generation**:
-
    - Generate accurate FHIR resources such as `Patient`, `Observation`, `MedicationStatement`, etc.
    - Test the ability to create complex resource relationships and validate terminology bindings.
 
-1. **FHIR Resource Validation**:
-
+2. **FHIR Resource Validation**:
    - Validate FHIR resources using operations like `$validate`.
    - Check for schema compliance, required field presence, and value set binding verification.
 
-1. **Summarization**:
+3. **Data Extraction**:
+   - Extract structured FHIR-compliant data from clinical notes and other unstructured data.
+   - Evaluate the proficiency of LLMs in extracting specific healthcare data elements.
 
-   - Summarize clinical notes into FHIR-compliant resources.
-   - Evaluate the proficiency of LLMs in generating concise and accurate summaries.
+4. **Tool Use**:
+   - Test models' ability to use FHIR validation tools and other healthcare-specific functions.
+   - Validate proper tool calling for FHIR operations.
 
-1. **FHIR Path Evaluation**:
-   - Assess the ability of models to evaluate complex FHIR Path expressions.
-   - Validate extraction accuracy and handle nested data structures.
+## Available Evaluations
 
-## Configuration
+1. **Card Scanning** (`evals/card-scanning/`)
+   - Description: Evaluates the ability to extract structured data from insurance card images or scans.
 
-The evaluation benchmark is configured using a YAML file. See `promptfooconfig.yaml` for an example.
+2. **CARIN Digital Insurance Cards** (`evals/carin-digital-insurance-cards/`)
+   - Description: Tests extraction of standardized insurance card data following CARIN specifications.
+   - Provider-specific prompts available for Google and OpenAI models.
 
-## Evaluations
+3. **Data Extraction** (`evals/extraction/`)
+   - Description: Comprehensive evaluation of extracting structured FHIR data from unstructured clinical text.
+   - Configurations: Both minimalist and specialist approaches available.
+   - Test categories: Basic demographics, conditions, explanations of benefit, medication requests, observations.
 
-> [!IMPORTANT]
-> The tests for each evaluation are placeholders in this preview release. They may require a separate process to execute or may have distribution restrictions.
+4. **FHIR Resource Generation** (`evals/generation/`)
+   - Description: Tests the ability to generate valid FHIR resources and bundles.
+   - Configurations: Zero-shot bundle generation and multi-turn tool use scenarios.
 
-1. **Structured FHIR Data Extraction** (extract-structured.yaml)
+5. **Model Evaluation** (`evals/evaluation/`)
+   - Description: Meta-evaluation framework for assessing model performance on FHIR tasks.
 
-   - Description: Evaluates the ability to extract specific information from structured FHIR resources.
-   - Tests: Includes demographic extraction, nested data extraction, and interpretation-based extraction.
+6. **Tool Use** (`evals/tool-use/`)
+   - Description: Validates FHIR resources using tool functions and proper tool calling patterns.
 
-1. **Unstructured Encounter Profile Extraction** (extract-unstructured-encounter-profile-first-experiment.yaml)
+## Custom Assertions
 
-   - Description: Success at extracting US Core Encounter Profile from clinical notes.
-   - Tests: Validates JSON output and checks for the presence of an Encounter FHIR resource.
+The framework includes custom assertion functions:
 
-1. **Unstructured Data Extraction** (extract-unstructured.yaml)
+- `fhirPathEquals.mjs`: Validates FHIR Path expressions
+- `isBundle.mjs`: Checks if output is a valid FHIR Bundle
+- `metaElementMissing.mjs`: Validates required metadata elements
+- `validateOperation.mjs`: Validates FHIR operation results
 
-   - Description: Extracts structured FHIR-compliant data from clinical notes.
-   - Tests: Ensures JSON output includes specific FHIR resources like Patient, Observation, and MedicationRequest.
+## Tools
 
-1. **FHIR Path Evaluation** (fhir-path.yaml)
+- `validateFhirBundle.mjs`: Tool for validating FHIR Bundle resources
 
-   - Description: Tests the ability to extract data using FHIR Path expressions.
-   - Tests: Includes extraction from nested arrays, date manipulation, and boolean logic.
+## Custom Providers
 
-1. **Tool Use Validation** (tool-use-validator.yaml)
-   - Description: Validates FHIR resources using tool functions.
-   - Tests: Includes basic validation, terminology validation, and profile-based validation.
-
-This preview release also includes an implementation of the [FHIR-GPT](https://github.com/flexpa/fhir-gpt) prompt as prior art:
-
-1. **FHIR-GPT Prompt Evaluation** (fhir-gpt.yaml)
-
-- Description: Focuses on extracting medication data, specifically the drug route, from narratives.
-- Tests: Validates JSON output and checks for correct SNOMED code extraction.
+- `AnthropicMessagesWithRecursiveToolCallsProvider.ts`: Enhanced Anthropic provider with recursive tool calling
+- `OpenAiResponsesWithRecursiveToolCallsProvider.ts`: Enhanced OpenAI provider with recursive tool calling
 
 ## Commands to Run Evaluations
 
-Assuming you have Bun installed, copy the `.env.template` file to `.env` and supply your OpenAI and Anthropic API keys.
-
-Then, run the following command to execute an evaluation:
+Install dependencies and set up environment variables:
 
 ```bash
-bun run eval -c evals/extract-unstructured.yaml
+yarn install
 ```
 
-The evaluation will print its performance metrics to the console.
+Copy the `.env.template` file to `.env` and supply your API keys for the models you plan to test.
+
+Run an evaluation:
+
+```bash
+# Example: Run the extraction evaluation with minimalist config
+promptfoo eval -c evals/extraction/config-minimalist.yaml
+
+# Example: Run the CARIN digital insurance cards evaluation
+promptfoo eval -c evals/carin-digital-insurance-cards/config.yaml
+
+# Example: Run tool use evaluation
+promptfoo eval -c evals/tool-use/config.yaml
+```
+
+The evaluation will print its performance metrics to the console and optionally save results to files.
 
 ## Roadmap
 
 The framework is continuously evolving, with ongoing efforts to expand its capabilities:
 
-- **Model Comparison**: Expand model coverage to support HealthSage Llama fine-tune.
+- **Model Comparison**: Expand model coverage to support additional healthcare-specific fine-tuned models
+- **Evaluation Coverage**: Add more comprehensive FHIR operation testing
+- **Real-world Data**: Incorporate more diverse healthcare scenarios and edge cases

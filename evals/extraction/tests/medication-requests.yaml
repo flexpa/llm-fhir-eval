@@ -1,0 +1,335 @@
+- vars:
+    resource: &medication_request_resource_json |
+      {
+        "resourceType": "MedicationRequest",
+        "id": "example",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+              "code": "1049502",
+              "display": "Acetaminophen 325 MG"
+            }
+          ]
+        },
+        "dosageInstruction": [
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "frequency": 4,
+                "period": 1,
+                "periodUnit": "d"
+              }
+            },
+            "doseAndRate": [
+              {
+                "type": {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/dose-rate-type",
+                      "code": "ordered",
+                      "display": "Ordered"
+                    }
+                  ]
+                },
+                "doseQuantity": {
+                  "value": 1,
+                  "unit": "tablet"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    question: What is the daily frequency?
+  assert:
+    - type: equals
+      value: 4
+- vars:
+    resource: *medication_request_resource_json
+    question: What is the medication name and strength?
+  assert:
+    - type: equals
+      value: Acetaminophen 325 MG
+- vars:
+    resource: *medication_request_resource_json
+    question: What is the dose quantity?
+  assert:
+    - type: equals
+      value: 1 tablet
+- vars:
+    resource: *medication_request_resource_json
+    question: What is the status of the medication request?
+  assert:
+    - type: equals
+      value: active
+- vars:
+    resource: *medication_request_resource_json
+    question: Does the medication have an RxNorm code? If yes, what is it?
+  assert:
+    - type: contains
+      value: '1049502'
+- description: MedicationRequest with multiple codings in medicationCodeableConcept
+  vars:
+    resource: |
+      {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "316074", "display": "Ibuprofen 200 MG" },
+            { "system": "http://snomed.info/sct", "code": "387207008", "display": "Ibuprofen" }
+          ]
+        },
+        "dosageInstruction": [
+          {
+            "doseAndRate": [
+              { "doseQuantity": { "value": 2, "unit": "tablet" } }
+            ]
+          }
+        ]
+      }
+    question: What is the RxNorm code for the medication?
+  assert:
+    - type: equals
+      value: 316074
+- description: MedicationRequest with missing dose unit
+  vars:
+    resource: |
+      {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "197361", "display": "Lisinopril 10 MG" }
+          ]
+        },
+        "dosageInstruction": [
+          {
+            "doseAndRate": [
+              { "doseQuantity": { "value": 1 } }
+            ]
+          }
+        ]
+      }
+    question: What is the dose quantity (including unit, if available)?
+  assert:
+    - type: equals
+      value: 1
+- description: MedicationRequest with dose as a range
+  vars:
+    resource: |
+      {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "617314", "display": "Metformin 500 MG" }
+          ]
+        },
+        "dosageInstruction": [
+          {
+            "doseAndRate": [
+              { "doseRange": { "low": { "value": 1, "unit": "tablet" }, "high": { "value": 2, "unit": "tablet" } } }
+            ]
+          }
+        ]
+      }
+    question: What is the dose range (including units)?
+  assert:
+    - type: contains-any
+      value:
+        - '1-2 tablet'
+        - '1 tablet - 2 tablet'
+        - '1-2 tablets'
+        - '1 to 2 tablets'
+        - '1 to 2 tablet'
+        - 1 tablet-2 tablet
+- description: MedicationRequest with coded reason for prescription
+  vars:
+    resource: |
+      {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "1049630", "display": "Atorvastatin 20 MG" }
+          ]
+        },
+        "reasonCode": [
+          { "coding": [ { "system": "http://snomed.info/sct", "code": "13644009", "display": "Hypercholesterolemia" } ] }
+        ],
+        "dosageInstruction": [
+          {
+            "doseAndRate": [
+              { "doseQuantity": { "value": 1, "unit": "tablet" } }
+            ]
+          }
+        ]
+      }
+    question: What is the coded reason for this prescription? Please return the code only.
+  assert:
+    - type: equals
+      value: 13644009
+- description: MedicationRequest with non-standard status
+  vars:
+    resource: |
+      {
+        "resourceType": "MedicationRequest",
+        "status": "on-hold",
+        "intent": "order",
+        "medicationCodeableConcept": {
+          "coding": [
+            { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "617314", "display": "Metformin 500 MG" }
+          ]
+        },
+        "dosageInstruction": [
+          {
+            "doseAndRate": [
+              { "doseQuantity": { "value": 1, "unit": "tablet" } }
+            ]
+          }
+        ]
+      }
+    question: What is the status of this medication request?
+  assert:
+    - type: equals
+      value: on-hold
+- description: Ultimate MedicationRequest extraction challenge
+  vars:
+    resource: |
+      {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": [
+          {
+            "resource": {
+              "resourceType": "MedicationRequest",
+              "status": "active",
+              "intent": "order",
+              "medicationCodeableConcept": {
+                "coding": [
+                  { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "860975", "display": "Ibuprofen 200 MG" },
+                  { "system": "http://snomed.info/sct", "code": "387207008", "display": "Ibuprofen" }
+                ]
+              },
+              "dosageInstruction": [
+                {
+                  "doseAndRate": [
+                    { "doseQuantity": { "value": 2, "unit": "tablet" } }
+                  ]
+                }
+              ],
+              "reasonCode": [
+                { "coding": [ { "system": "http://snomed.info/sct", "code": "386661006", "display": "Fever" } ] }
+              ],
+              "extension": [
+                {
+                  "url": "http://example.org/fhir/StructureDefinition/medicationrequest-priority",
+                  "valueCode": "routine"
+                }
+              ]
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "MedicationRequest",
+              "status": "on-hold",
+              "intent": "order",
+              "medicationCodeableConcept": {
+                "coding": [
+                  { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "617314", "display": "Metformin 500 MG" },
+                  { "system": "http://snomed.info/sct", "code": "860975", "display": "Ibuprofen 200 MG" }
+                ]
+              },
+              "dosageInstruction": [
+                {
+                  "doseAndRate": [
+                    { "doseRange": { "low": { "value": 1, "unit": "tablet" }, "high": { "value": 2, "unit": "tablet" } } }
+                  ]
+                }
+              ],
+              "reasonCode": [
+                { "coding": [ { "system": "http://snomed.info/sct", "code": "44054006", "display": "Diabetes mellitus type 2" } ] }
+              ]
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "MedicationRequest",
+              "status": "cancelled",
+              "intent": "order",
+              "medicationCodeableConcept": {
+                "coding": [
+                  { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "1049630", "display": "Atorvastatin 20 MG" }
+                ]
+              },
+              "dosageInstruction": [
+                {
+                  "doseAndRate": [
+                    { "doseQuantity": { "value": 1 } }
+                  ]
+                }
+              ],
+              "reasonCode": [
+                { "coding": [ { "system": "http://snomed.info/sct", "code": "13644009", "display": "Hypercholesterolemia" } ] }
+              ]
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "MedicationRequest",
+              "status": "active",
+              "intent": "order",
+              "medicationCodeableConcept": {
+                "coding": [
+                  { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "197361", "display": "Lisinopril 10 MG" }
+                ]
+              },
+              "dosageInstruction": [
+                {
+                  "doseAndRate": [
+                    { "doseQuantity": { "value": 1, "unit": "tablet" } }
+                  ]
+                }
+              ],
+              "reasonCode": [
+                { "coding": [ { "system": "http://snomed.info/sct", "code": "38341003", "display": "Hypertension" } ] }
+              ]
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "MedicationRequest",
+              "status": "active",
+              "intent": "order",
+              "medicationCodeableConcept": {
+                "coding": [
+                  { "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "617314", "display": "Metformin 500 MG" }
+                ]
+              },
+              "dosageInstruction": [
+                {
+                  "doseAndRate": [
+                    { "doseQuantity": { "value": 1, "unit": "tablet" } }
+                  ]
+                }
+              ],
+              "reasonCode": [
+                { "coding": [ { "system": "http://snomed.info/sct", "code": "44054006", "display": "Diabetes mellitus type 2" } ] }
+              ]
+            }
+          }
+        ]
+      }
+    question: What is the active medication for diabetes mellitus type 2 (RxNorm code)?
+  assert:
+    - type: equals
+      value: 617314

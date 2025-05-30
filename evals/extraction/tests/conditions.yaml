@@ -1,0 +1,264 @@
+- vars:
+    resource: &condition_resource_json |
+      {
+        "resourceType": "Condition",
+        "id": "example",
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active",
+              "display": "Active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed",
+              "display": "Confirmed"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "problem-list-item",
+                "display": "Problem List Item"
+              }
+            ]
+          }
+        ],
+        "severity": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "24484000",
+              "display": "Severe"
+            }
+          ]
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "195967001",
+              "display": "Asthma"
+            }
+          ]
+        },
+        "onsetDateTime": "2020-03-15"
+      }
+    question: Is this an active severe condition, and if so, what is it? You must specify both the condition and the severity.
+  assert:
+    - type: factuality
+      value: Yes, severe active asthma
+- vars:
+    resource: *condition_resource_json
+    question: When did the patient develop the condition?
+  assert:
+    - type: equals
+      value: '2020-03-15'
+- vars:
+    resource: *condition_resource_json
+    question: What coding system is used to specify the condition's severity?
+  assert:
+    - type: equals
+      value: http://snomed.info/sct
+- description: Condition with multiple codings for code
+  vars:
+    resource: |
+      {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+          "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ]
+        },
+        "code": {
+          "coding": [
+            { "system": "http://snomed.info/sct", "code": "44054006", "display": "Diabetes mellitus type 2" },
+            { "system": "http://icd10who.org", "code": "E11", "display": "Type 2 diabetes mellitus" }
+          ]
+        },
+        "onsetDateTime": "2018-06-01"
+      }
+    question: What is the SNOMED code for the condition?
+  assert:
+    - type: equals
+      value: 44054006
+- description: Condition with missing severity
+  vars:
+    resource: |
+      {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+          "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ]
+        },
+        "code": {
+          "coding": [ { "system": "http://snomed.info/sct", "code": "38341003", "display": "Hypertension" } ]
+        },
+        "onsetDateTime": "2019-01-01"
+      }
+    question: What is the severity of the condition?
+  assert:
+    - type: equals
+      value: N/A
+- description: Condition with ambiguous severity (multiple codings)
+  vars:
+    resource: |
+      {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+          "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ]
+        },
+        "severity": {
+          "coding": [
+            { "system": "http://snomed.info/sct", "code": "255604002", "display": "Mild" },
+            { "system": "http://snomed.info/sct", "code": "24484000", "display": "Severe" }
+          ]
+        },
+        "code": {
+          "coding": [ { "system": "http://snomed.info/sct", "code": "195967001", "display": "Asthma" } ]
+        },
+        "onsetDateTime": "2021-05-10"
+      }
+    question: List all severities coded for this condition.
+  assert:
+    - type: contains-any
+      value:
+        - Mild, Severe
+        - Mild,Severe
+        - "Mild\nSevere"
+- description: Condition with reason reference
+  vars:
+    resource: |
+      {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+          "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ]
+        },
+        "code": {
+          "coding": [ { "system": "http://snomed.info/sct", "code": "195967001", "display": "Asthma" } ]
+        },
+        "onsetDateTime": "2022-02-02",
+        "evidence": [
+          { "detail": [ { "reference": "Observation/obs123" } ] }
+        ]
+      }
+    question: What is the referenced evidence resource type?
+  assert:
+    - type: equals
+      value: Observation
+- description: Ultimate Condition extraction challenge - Staging and Progression
+  vars:
+    resource: |
+      {
+        "resourceType": "Bundle",
+        "type": "collection",
+        "entry": [
+          {
+            "fullUrl": "urn:uuid:cond-diabetes",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-diabetes",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "44054006", "display": "Diabetes mellitus type 2" } ], "text": "Diabetes mellitus type 2" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2015-01-01"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-hypertension",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-hypertension",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "38341003", "display": "Hypertensive disorder, systemic arterial" } ], "text": "Hypertension" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2016-01-01"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-ckd-stage2-resolved",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-ckd-stage2-resolved",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "resolved" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "431856001", "display": "Chronic kidney disease stage 2" } ], "text": "CKD Stage 2" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2020-03-15",
+              "abatementDateTime": "2021-01-10"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-ckd-stage3a-active",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-ckd-stage3a-active",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "441208003", "display": "Chronic kidney disease stage 3A" } ], "text": "CKD Stage 3a" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2021-02-20"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-ckd-general-error",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-ckd-general-error",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "entered-in-error" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "709044004", "display": "Chronic kidney disease" } ], "text": "CKD general" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2021-01-05"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-ckd-stage1-refuted",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-ckd-stage1-refuted",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "refuted" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "431855002", "display": "Chronic kidney disease stage 1" } ], "text": "CKD Stage 1" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2019-11-01"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-ckd-stage2-differential",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-ckd-stage2-differential",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "active" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "differential" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "431856001", "display": "Chronic kidney disease stage 2" } ], "text": "CKD Stage 2 (Differential)" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2020-12-01"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:cond-aki-resolved",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "cond-aki-resolved",
+              "clinicalStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-clinical", "code": "resolved" } ] },
+              "verificationStatus": { "coding": [ { "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status", "code": "confirmed" } ] },
+              "code": { "coding": [ { "system": "http://snomed.info/sct", "code": "66547009", "display": "Acute kidney injury" } ], "text": "Acute Kidney Injury" },
+              "subject": { "reference": "Patient/example" },
+              "onsetDateTime": "2022-06-01",
+              "abatementDateTime": "2022-07-15"
+            }
+          }
+        ]
+      }
+    question: What is the SNOMED CT code for the highest currently active and confirmed stage of Chronic Kidney Disease (CKD) based on the patient's record?
+  assert:
+    - type: equals
+      value: 441208003 # CKD Stage 3a

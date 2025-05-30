@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: 'Structured FHIR Data Extraction'
+
+providers:
+  - file://./providers.yaml
+
+prompts:
+  - label: 'Specialist'
+    raw: |
+      You are a FHIR data extraction specialist.
+      Given a FHIR resource and a question, extract the requested information.
+      Return only the specific answer without explanation.
+      If the question cannot be answered with the information provided, return "N/A".
+      Do not infer or make assumptions.
+      When the question is about a specific value, return the value only.
+      When the value exists literally in the FHIR resource, return the value only.
+      If a unit is specified, return the value with unit, in the normally expected format.
+      Do not return extra text or formatting including unnecesary quotes around strings.
+      Do not append or prepend any newlines.
+
+      <fhir-resource>
+      {{resource}}
+      </fhir-resource>
+
+      <question>
+      {{question}}
+      </question>
+
+defaultTest:
+  options:
+    transform: output.trim()
+
+tests:
+  - file://tests/basic-demographics.yaml
+  - file://tests/conditions.yaml
+  - file://tests/observations.yaml
+  - file://tests/explanations-of-benefit.yaml
+  - file://tests/medication-requests.yaml
+  - file://tests/patient-history.yaml

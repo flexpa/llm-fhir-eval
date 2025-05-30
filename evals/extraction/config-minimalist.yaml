@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: 'Structured FHIR Data Extraction'
+
+providers:
+  - file://./providers.yaml
+
+prompts:
+  - label: 'Minimalist'
+    raw: |
+      Extract the answer to the question from the FHIR resource.
+
+      <fhir-resource>
+      {{resource}}
+      </fhir-resource>
+
+      <question>
+      {{question}}
+      </question>
+
+defaultTest:
+  options:
+    transform: output.trim()
+
+tests:
+  - file://tests/basic-demographics.yaml
+  - file://tests/conditions.yaml
+  - file://tests/observations.yaml
+  - file://tests/explanations-of-benefit.yaml
+  - file://tests/medication-requests.yaml
+  - file://tests/patient-history.yaml
