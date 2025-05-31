@@ -1,12 +1,11 @@
 # @flexpa/llm-fhir-eval
 
-> [!IMPORTANT]
-> This is an early preview release. All evaluations are experimental.
+> [!NOTE]
 > Follow the development progress on [FHIR Chat](https://chat.fhir.org/#narrow/channel/323443-Artificial-Intelligence.2FMachine-Learning-.28AI.2FML.29/topic/LLM.20FHIR.20Eval.20Preview/near/483998202).
 
 ## Overview
 
-`@flexpa/llm-fhir-eval` is a preview of an evaluation framework designed to benchmark the performance of LLMs on FHIR-specific tasks including generation, validation, and extraction. This framework aims to systematically test and validate the capabilities of LLMs in handling various healthcare-interoperability related tasks, ensuring they meet the standards required for effective FHIR implementations. It implements evaluations from prior art such as [FHIR-GPT](https://ai.nejm.org/doi/10.1056/AIcs2300301). We are seeking feedback on the benchmark and its evaluations.
+`@flexpa/llm-fhir-eval` is an evaluation framework designed to benchmark the performance of LLMs on FHIR-specific tasks including generation, validation, and extraction. This framework systematically tests and validates the capabilities of LLMs in handling various healthcare-interoperability related tasks, ensuring they meet the standards required for effective FHIR implementations. It implements evaluations from prior art such as [FHIR-GPT](https://ai.nejm.org/doi/10.1056/AIcs2300301).
 
 ## Benchmark
 
@@ -30,27 +29,15 @@
 
 ## Available Evaluations
 
-1. **Card Scanning** (`evals/card-scanning/`)
-   - Description: Evaluates the ability to extract structured data from insurance card images or scans.
-
-2. **CARIN Digital Insurance Cards** (`evals/carin-digital-insurance-cards/`)
-   - Description: Tests extraction of standardized insurance card data following CARIN specifications.
-   - Provider-specific prompts available for Google and OpenAI models.
-
-3. **Data Extraction** (`evals/extraction/`)
+1. **Data Extraction** (`evals/extraction/`)
    - Description: Comprehensive evaluation of extracting structured FHIR data from unstructured clinical text.
    - Configurations: Both minimalist and specialist approaches available.
    - Test categories: Basic demographics, conditions, explanations of benefit, medication requests, observations.
 
-4. **FHIR Resource Generation** (`evals/generation/`)
+2. **FHIR Resource Generation** (`evals/generation/`)
    - Description: Tests the ability to generate valid FHIR resources and bundles.
    - Configurations: Zero-shot bundle generation and multi-turn tool use scenarios.
-
-5. **Model Evaluation** (`evals/evaluation/`)
-   - Description: Meta-evaluation framework for assessing model performance on FHIR tasks.
-
-6. **Tool Use** (`evals/tool-use/`)
-   - Description: Validates FHIR resources using tool functions and proper tool calling patterns.
+   - Models supported: GPT-3.5-turbo, GPT-4.1, O3 (low/high reasoning), Claude 3.5 Haiku, Claude 3.5 Sonnet, Claude Sonnet 4, Claude Opus 4
 
 ## Custom Assertions
 
@@ -67,8 +54,10 @@ The framework includes custom assertion functions:
 
 ## Custom Providers
 
-- `AnthropicMessagesWithRecursiveToolCallsProvider.ts`: Enhanced Anthropic provider with recursive tool calling
+- `AnthropicMessagesWithRecursiveToolCallsProvider.ts`: Enhanced Anthropic provider with recursive tool calling (up to 10 depth levels)
 - `OpenAiResponsesWithRecursiveToolCallsProvider.ts`: Enhanced OpenAI provider with recursive tool calling
+
+These providers enable multi-turn tool interactions where models can iteratively call validation tools to improve their FHIR resource generation.
 
 ## Commands to Run Evaluations
 
@@ -86,19 +75,12 @@ Run an evaluation:
 # Example: Run the extraction evaluation with minimalist config
 promptfoo eval -c evals/extraction/config-minimalist.yaml
 
-# Example: Run the CARIN digital insurance cards evaluation
-promptfoo eval -c evals/carin-digital-insurance-cards/config.yaml
+# Example: Run the FHIR bundle generation evaluation
+promptfoo eval -c evals/generation/config-zero-shot-bundle.yaml
 
-# Example: Run tool use evaluation
-promptfoo eval -c evals/tool-use/config.yaml
+# Example: Run multi-turn tool use evaluation
+promptfoo eval -c evals/generation/config-multi-turn-tool-use.js
 ```
 
 The evaluation will print its performance metrics to the console and optionally save results to files.
 
-## Roadmap
-
-The framework is continuously evolving, with ongoing efforts to expand its capabilities:
-
-- **Model Comparison**: Expand model coverage to support additional healthcare-specific fine-tuned models
-- **Evaluation Coverage**: Add more comprehensive FHIR operation testing
-- **Real-world Data**: Incorporate more diverse healthcare scenarios and edge cases

@@ -1,7 +1,7 @@
 {
   "name": "@flexpa/llm-fhir-eval",
   "module": "index.ts",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "scripts": {
     "eval": "promptfoo eval"
   },
